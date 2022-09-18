@@ -51,15 +51,6 @@ function Share() {
     const pcConfig = {
       'iceServers': [
         {
-          urls: 'stun:stun1.l.google.com:19302'
-        },
-        {
-          urls: 'stun:stun3.l.google.com:19302'
-        },
-        {
-          urls: 'stun:stun4.l.google.com:19302'
-        },
-        {
           urls: 'stun:openrelay.metered.ca:80',
         },
         {
@@ -106,8 +97,7 @@ function Share() {
         pc.current.createOffer().then((sdp: any) => {
           pc.current.setLocalDescription(sdp)
         })
-        navigator.clipboard.writeText(url)
-        toast.success('Link copied to clipboard')
+
       },
       (e: any) => {
         const error = {
@@ -225,7 +215,24 @@ function Share() {
         >
           Start Sharing screen
         </button>
-      </div>
+        <div className="relative rounded-lg ">
+          <input
+              value={url}
+              className="block p-[7px]  pl-4 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300"
+              disabled
+          />
+          <button
+              onClick={()=>{
+                navigator.clipboard.writeText(url)
+                toast.success('Link copied to clipboard')
+              }}
+              className="text-white font-bold absolute right-1.5 bottom-1 focus:outline-none bg-orange-400 hover:bg-orange-500 font-medium rounded-lg text-sm px-2 py-1"
+          >
+            Crear
+          </button>
+        </div>
+
+    </div>
     </div>
   )
 }
