@@ -50,24 +50,29 @@ function Share() {
     }
     const pcConfig = {
       'iceServers': [
-        {
-          urls: 'stun:openrelay.metered.ca:80',
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:80',
-          username: 'openrelayproject',
-          credential: 'openrelayproject',
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:443',
-          username: 'openrelayproject',
-          credential: 'openrelayproject',
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-          username: 'openrelayproject',
-          credential: 'openrelayproject',
-        },
+        {urls:"stun.l.google.com:19302"},
+        {urls:"stun1.l.google.com:19302"},
+        {urls:"stun2.l.google.com:19302"},
+        {urls:"stun3.l.google.com:19302"},
+        {urls:"stun4.l.google.com:19302"},
+        // {
+        //   urls: 'stun:openrelay.metered.ca:80',
+        // },
+        // {
+        //   urls: 'turn:openrelay.metered.ca:80',
+        //   username: 'openrelayproject',
+        //   credential: 'openrelayproject',
+        // },
+        // {
+        //   urls: 'turn:openrelay.metered.ca:443',
+        //   username: 'openrelayproject',
+        //   credential: 'openrelayproject',
+        // },
+        // {
+        //   urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+        //   username: 'openrelayproject',
+        //   credential: 'openrelayproject',
+        // },
       ]
     }
 
