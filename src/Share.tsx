@@ -29,7 +29,7 @@ function Share() {
       const error = 'Your browser does NOT supports getDisplayMedia API.'
       throw new Error(error)
     }
-    const pcConfig = undefined
+    // const pcConfig = undefined
     ws.current.onmessage = (message: any) => {
       const msg = JSON.parse(message.data)
       if (msg.type == 'start-communication') {
@@ -48,15 +48,37 @@ function Share() {
         pc.current.addIceCandidate(new RTCIceCandidate(msg.data))
       }
     }
-    // const pc_config1 = {
-    //   "iceServers": [
-    //     {
-    //       urls: 'stun:[STUN_IP]:[PORT]',
-    //       'credentials': '[YOR CREDENTIALS]',
-    //       'username': '[USERNAME]'
-    //     }
-    //   ]
-    // }
+    const pcConfig = {
+      "iceServers": [
+        {
+          urls: 'stun:stun1.l.google.com:19302'
+        },
+        {
+          urls: 'stun:stun3.l.google.com:19302'
+        },
+        {
+          urls: 'stun:stun4.l.google.com:19302'
+        },
+        {
+          urls: "stun:openrelay.metered.ca:80",
+        },
+        {
+          urls: "turn:openrelay.metered.ca:80",
+          username: "openrelayproject",
+          credential: "openrelayproject",
+        },
+        {
+          urls: "turn:openrelay.metered.ca:443",
+          username: "openrelayproject",
+          credential: "openrelayproject",
+        },
+        {
+          urls: "turn:openrelay.metered.ca:443?transport=tcp",
+          username: "openrelayproject",
+          credential: "openrelayproject",
+        },
+      ]
+    }
 
     // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection
     // create an instance of RTCPeerConnection
