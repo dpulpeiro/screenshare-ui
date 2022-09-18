@@ -1,4 +1,4 @@
-# React Typescript Tailwind Starter
+# ScreenShare WebRTC
 
 Starter project with React, typescript, tailwind, eslint and prettier ready to use
 
@@ -38,7 +38,7 @@ Makefile variables that can be customized:
     ```
     make dev/shell
     ```
-* Run production docker in local port 8000 
+* Run production docker in local port 8001
     ```
     make prod/local
     ```

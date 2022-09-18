@@ -1,9 +1,12 @@
-DOCKER_IMAGE_NAME=react-typescript-tailwind-eslint-prettier
+DOCKER_IMAGE_NAME=screencapture
 PROD_TAG=0.0.1
 
 # Use any -slim version
-NODE_VERSION=16.17.0-slim
+NODE_VERSION=14.17.3-slim
 NGINX_VERSION=1.23.1-alpine
+
+clean:
+	rm -rf .cache node_modules
 
 dev/build:
 	DOCKER_BUILDKIT=1 docker build \
@@ -29,5 +32,6 @@ prod/build:
         -f devops/prod/Dockerfile \
         -t ${DOCKER_IMAGE_NAME}:${PROD_TAG} \
         .
+
 prod/local:
-	docker run -it --rm -p 8000:80 ${DOCKER_IMAGE_NAME}:${PROD_TAG}
+	docker run -it --rm -p 8001:80 ${DOCKER_IMAGE_NAME}:${PROD_TAG}
