@@ -17,8 +17,8 @@ function Share() {
   const [options, setOptions] = useState({
     video: {
       aspectRatio: 'default',
-      frameRate: '60',
-      resolutions: '1280p',
+      frameRate: '30',
+      resolutions: '720p',
       cursor: 'default',
       displaySurface: 'default',
       logicalSurface: 'default',
