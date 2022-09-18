@@ -16,7 +16,28 @@ function View() {
 
   const pc = useRef<any>()
   useEffect(() => {
-    const pcConfig = undefined
+    const pcConfig = {
+      'iceServers': [
+        {
+          urls: 'stun:openrelay.metered.ca:80',
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:80',
+          username: 'openrelayproject',
+          credential: 'openrelayproject',
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443',
+          username: 'openrelayproject',
+          credential: 'openrelayproject',
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+          username: 'openrelayproject',
+          credential: 'openrelayproject',
+        },
+      ]
+    }
     ws.current.onopen = (m) => {
       ws.current.send(JSON.stringify({ type: 'start-communication', clientID: clientID }))
     }
