@@ -1,5 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react'
-import {toast} from 'react-hot-toast';
+import {Listbox, Transition} from '@headlessui/react'
+import React, {Fragment, useEffect, useRef, useState} from 'react'
+import {toast} from 'react-hot-toast'
+import {CheckIcon, ChevronUpDownIcon} from '@heroicons/react/20/solid'
+const aspectRatioMap = {
+  '16:9':1.77, '4:3':1.33, '21:9':2.35, '14:10':1.4, '19:10':1.9
+}
+const config = {
+  aspectRatio: ['default', '16:9', '4:3', '21:9', '14:10', '19:10'],
+  frameRate: ['default', '5', '10', '15', '20', '30', '60'],
+  resolutions: ['default', 'fit-screen', '4k', '1080p', '720p','480p','360p'],
+  cursor: ['default', 'always', 'never', 'motion'],
+  displaySurface: ['default', 'monitor', 'window', 'application', 'browser'],
+  logicalSurface: ['default', 'true'],
+}
 
 function Share() {
   const uuid = crypto.randomUUID()
@@ -10,16 +23,18 @@ function Share() {
       }/ws/${uuid}`,
     ),
   )
-  const url = `${process.env.NODE_ENV === 'development' ? 'http' : 'https'}://${
+  const url = useRef(`${process.env.NODE_ENV === 'development' ? 'http' : 'https'}://${
     process.env.REACT_APP_APP
-  }/view/${uuid}`
+  }/view/${uuid}`)
   const pc = useRef<any>()
+  const [uptade, setUpdate] = useState(false)
+  const toggle=()=>setUpdate(!uptade)
   const [options, setOptions] = useState({
     video: {
       aspectRatio: 'default',
       frameRate: '30',
-      resolutions: '720p',
-      cursor: 'default',
+      resolutions: '1080p',
+      cursor: 'never',
       displaySurface: 'default',
       logicalSurface: 'default',
     },
@@ -49,37 +64,18 @@ function Share() {
       }
     }
     const pcConfig = {
-      'iceServers': [
-        {urls:"stun.l.google.com:19302"},
-        {urls:"stun1.l.google.com:19302"},
-        {urls:"stun2.l.google.com:19302"},
-        {urls:"stun3.l.google.com:19302"},
-        {urls:"stun4.l.google.com:19302"},
-        // {
-        //   urls: 'stun:openrelay.metered.ca:80',
-        // },
-        // {
-        //   urls: 'turn:openrelay.metered.ca:80',
-        //   username: 'openrelayproject',
-        //   credential: 'openrelayproject',
-        // },
-        // {
-        //   urls: 'turn:openrelay.metered.ca:443',
-        //   username: 'openrelayproject',
-        //   credential: 'openrelayproject',
-        // },
-        // {
-        //   urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-        //   username: 'openrelayproject',
-        //   credential: 'openrelayproject',
-        // },
-      ]
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+      ],
     }
 
     // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection
     // create an instance of RTCPeerConnection
     pc.current = new RTCPeerConnection(pcConfig)
-
     // triggered when a new candidate is returned
     pc.current.onicecandidate = (e: any) => {
       // send the candidates to the remote peer
@@ -102,7 +98,6 @@ function Share() {
         pc.current.createOffer().then((sdp: any) => {
           pc.current.setLocalDescription(sdp)
         })
-
       },
       (e: any) => {
         const error = {
@@ -137,7 +132,9 @@ function Share() {
     let videoConstraints: any = {}
 
     if (options.video.aspectRatio !== 'default') {
-      videoConstraints.aspectRatio = options.video.aspectRatio
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      videoConstraints.aspectRatio = aspectRatioMap[(options.video.aspectRatio as string)]
     }
 
     if (options.video.frameRate !== 'default') {
@@ -212,32 +209,103 @@ function Share() {
         'flex items-center justify-center h-screen w-screen bg-gradient-to-r from-blue-300 via-green-200 to-yellow-300'
       }
     >
-      <div>
+      <div className={'px-10 max-w-3xl w-full'}>
+        <div className={'grid grid-cols-2 md:grid-cols-3 gap-4'}>
+          {Object.keys(config).map((key: string) => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const currentOptions = config[key]
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const selectedOption = options.video[key] as string
+            return (
+              <Listbox
+                key={key}
+                value={selectedOption}
+                onChange={(option) => {
+                  const opt = options
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  opt.video[key] = option
+                  setOptions(opt)
+                  toggle()
+                }}
+              >
+                <div className='relative mt-1'>
+                  <Listbox.Button className='relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm'>
+                    <span className='block truncate'><span className={'capitalize font-bold'}>{key}</span>: {selectedOption}</span>
+                    <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
+                      <ChevronUpDownIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
+                    </span>
+                  </Listbox.Button>
+                  <Transition
+                    as={Fragment}
+                    leave='transition ease-in duration-100'
+                    leaveFrom='opacity-100'
+                    leaveTo='opacity-0'
+                  >
+                    <Listbox.Options className='absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm'>
+                      {currentOptions.map((opt: string, personIdx: number) => (
+                        <Listbox.Option
+                          key={personIdx}
+                          className={({ active }) =>
+                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                              active ? 'bg-amber-100 text-amber-900' : 'text-gray-900'
+                            }`
+                          }
+                          value={opt}
+                        >
+                          {({ selected }) => (
+                            <>
+                              <span
+                                className={`block truncate ${
+                                  selected ? 'font-medium' : 'font-normal'
+                                }`}
+                              >
+                                {opt}
+                              </span>
+                              {selected ? (
+                                <span className='absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600'>
+                                  <CheckIcon className='h-5 w-5' aria-hidden='true' />
+                                </span>
+                              ) : null}
+                            </>
+                          )}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </Transition>
+                </div>
+              </Listbox>
+            )
+          })}
+        </div>
         <button
           type='button'
           onClick={startSharingScreen}
-          className='text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2'
+          className='w-full text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4
+           focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-4 mt-20'
         >
           Start Sharing screen
         </button>
-        <div className="relative rounded-lg ">
+        <div className='relative rounded-lg '>
           <input
-              value={url}
-              className="block p-[7px]  pl-4 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300"
-              disabled
+            value={url.current}
+            className='block p-[7px]  pl-4 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300'
+            disabled
           />
           <button
-              onClick={()=>{
-                navigator.clipboard.writeText(url)
-                toast.success('Link copied to clipboard')
-              }}
-              className="text-white font-bold absolute right-1.5 bottom-1 focus:outline-none bg-orange-400 hover:bg-orange-500 font-medium rounded-lg text-sm px-2 py-1"
+            onClick={() => {
+              navigator.clipboard.writeText(url.current)
+              toast.success('Link copied to clipboard')
+            }}
+            className='text-white font-bold absolute right-1.5 bottom-1 focus:outline-none  bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l
+           focus:outline-none font-medium rounded-lg text-sm px-2 py-1'
           >
-            Crear
+            Copy
           </button>
         </div>
-
-    </div>
+      </div>
     </div>
   )
 }
