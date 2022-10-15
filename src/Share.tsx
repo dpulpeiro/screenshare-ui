@@ -2,13 +2,19 @@ import {Listbox, Transition} from '@headlessui/react'
 import React, {Fragment, useEffect, useRef, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {CheckIcon, ChevronUpDownIcon} from '@heroicons/react/20/solid'
+import {PeerConnectionManager} from './streaming/PeerConnectionManager'
+
 const aspectRatioMap = {
-  '16:9':1.77, '4:3':1.33, '21:9':2.35, '14:10':1.4, '19:10':1.9
+  '16:9': 1.77,
+  '4:3': 1.33,
+  '21:9': 2.35,
+  '14:10': 1.4,
+  '19:10': 1.9,
 }
 const config = {
   aspectRatio: ['default', '16:9', '4:3', '21:9', '14:10', '19:10'],
   frameRate: ['default', '5', '10', '15', '20', '30', '60'],
-  resolutions: ['default', 'fit-screen', '4k', '1080p', '720p','480p','360p'],
+  resolutions: ['default', 'fit-screen', '4k', '1080p', '720p', '480p', '360p'],
   cursor: ['default', 'always', 'never', 'motion'],
   displaySurface: ['default', 'monitor', 'window', 'application', 'browser'],
   logicalSurface: ['default', 'true'],
@@ -16,19 +22,14 @@ const config = {
 
 function Share() {
   const uuid = crypto.randomUUID()
-  const ws = useRef<WebSocket>(
-    new WebSocket(
-      `${process.env.NODE_ENV === 'development' ? 'ws' : 'wss'}://${
-        process.env.REACT_APP_API
-      }/ws/${uuid}`,
-    ),
+  const url = useRef(
+    `${process.env.NODE_ENV === 'development' ? 'http' : 'https'}://${
+      process.env.REACT_APP_APP
+    }/view/${uuid}`,
   )
-  const url = useRef(`${process.env.NODE_ENV === 'development' ? 'http' : 'https'}://${
-    process.env.REACT_APP_APP
-  }/view/${uuid}`)
-  const pc = useRef<any>()
+  const cm = useRef<any>()
   const [uptade, setUpdate] = useState(false)
-  const toggle=()=>setUpdate(!uptade)
+  const toggle = () => setUpdate(!uptade)
   const [options, setOptions] = useState({
     video: {
       aspectRatio: 'default',
@@ -44,60 +45,17 @@ function Share() {
       const error = 'Your browser does NOT supports getDisplayMedia API.'
       throw new Error(error)
     }
-    // const pcConfig = undefined
-    ws.current.onmessage = (message: any) => {
-      const msg = JSON.parse(message.data)
-      if (msg.type == 'start-communication') {
-        const data = {
-          type: 'video-offer',
-          data: pc.current.localDescription,
-          clientID: msg.clientID,
-        }
-        ws.current.send(JSON.stringify(data))
-        pc.current.setLocalDescription(pc.current.localDescription)
-      }
-      if (msg.type == 'video-answer') {
-        pc.current.setRemoteDescription(new RTCSessionDescription(msg.data))
-      }
-      if (msg.type === 'new-ice-candidate') {
-        pc.current.addIceCandidate(new RTCIceCandidate(msg.data))
-      }
-    }
-    const pcConfig = {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' },
-      ],
-    }
-
-    // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection
-    // create an instance of RTCPeerConnection
-    pc.current = new RTCPeerConnection(pcConfig)
-    // triggered when a new candidate is returned
-    pc.current.onicecandidate = (e: any) => {
-      // send the candidates to the remote peer
-      // see addCandidate below to be triggered on the remote peer
-      if (e.candidate) {
-        const data = { type: 'new-ice-candidate', data: e.candidate }
-        ws.current.send(JSON.stringify(data))
-      }
-    }
-
-    // triggered when there is a change in connection state
-    pc.current.oniceconnectionstatechange = (e: any) => {
-      console.log(e)
-    }
+    cm.current = new PeerConnectionManager(
+      `${process.env.NODE_ENV === 'development' ? 'ws' : 'wss'}://${
+        process.env.REACT_APP_API
+      }/ws/${uuid}`,
+    )
   })
   const startSharingScreen = () => {
     invokeGetDisplayMedia(
       (screen: any) => {
-        pc.current.addStream(screen)
-        pc.current.createOffer().then((sdp: any) => {
-          pc.current.setLocalDescription(sdp)
-        })
+        console.log(screen)
+        cm.current.setStream(screen)
       },
       (e: any) => {
         const error = {
@@ -134,7 +92,7 @@ function Share() {
     if (options.video.aspectRatio !== 'default') {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      videoConstraints.aspectRatio = aspectRatioMap[(options.video.aspectRatio as string)]
+      videoConstraints.aspectRatio = aspectRatioMap[options.video.aspectRatio as string]
     }
 
     if (options.video.frameRate !== 'default') {
@@ -233,7 +191,9 @@ function Share() {
               >
                 <div className='relative mt-1'>
                   <Listbox.Button className='relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm'>
-                    <span className='block truncate'><span className={'capitalize font-bold'}>{key}</span>: {selectedOption}</span>
+                    <span className='block truncate'>
+                      <span className={'capitalize font-bold'}>{key}</span>: {selectedOption}
+                    </span>
                     <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
                       <ChevronUpDownIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
                     </span>

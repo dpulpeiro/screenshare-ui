@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import React, {useEffect, useRef} from 'react'
+import {useParams} from 'react-router-dom'
 
 function View() {
   const { uuid } = useParams()
@@ -31,9 +31,10 @@ function View() {
     ws.current.onmessage = (message: any) => {
       const data = JSON.parse(message.data)
       if (data.type == 'video-offer') {
+        console.log(data)
         pc.current.setRemoteDescription(new RTCSessionDescription(data.data))
         pc.current.createAnswer().then((sdp: any) => {
-          const data = { type: 'video-answer', data: sdp }
+          const data = { type: 'video-answer', data: sdp, clientID: clientID }
           ws.current.send(JSON.stringify(data))
           pc.current.setLocalDescription(sdp)
         })
@@ -61,7 +62,7 @@ function View() {
       // send the candidates to the remote peer
       // see addCandidate below to be triggered on the remote peer
       if (e.candidate) {
-        const data = { type: 'new-ice-candidate', data: e.candidate }
+        const data = { type: 'new-ice-candidate', data: e.candidate, clientID: clientID }
         ws.current.send(JSON.stringify(data))
       }
     }
