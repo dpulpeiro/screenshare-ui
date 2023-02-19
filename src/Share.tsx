@@ -18,14 +18,10 @@ function Share() {
   const uuid = crypto.randomUUID()
   const ws = useRef<WebSocket>(
     new WebSocket(
-      `${process.env.NODE_ENV === 'development' ? 'ws' : 'wss'}://${
-        process.env.REACT_APP_API
-      }/ws/${uuid}`,
+        `${window.location.protocol}//${window.location.host}/ws/${uuid}`,
     ),
   )
-  const url = useRef(`${process.env.NODE_ENV === 'development' ? 'http' : 'https'}://${
-    process.env.REACT_APP_APP
-  }/view/${uuid}`)
+  const url = useRef(`${window.location.protocol}//${window.location.host}/ws/${uuid}`)
   const pc = useRef<any>()
   const [uptade, setUpdate] = useState(false)
   const toggle=()=>setUpdate(!uptade)
