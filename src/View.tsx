@@ -8,7 +8,7 @@ function View() {
   const clientID = crypto.randomUUID()
   const ws = useRef<WebSocket>(
     new WebSocket(
-      `${process.env.NODE_ENV === 'development' ? 'ws' : 'wss'}://${
+      `${process.env.NODE_ENV === 'development' ? 'wss' : 'wss'}://${
         process.env.REACT_APP_API
       }/ws/${uuid}/${clientID}`,
     ),
